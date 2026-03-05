@@ -517,6 +517,64 @@ class Prefs extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Save current global TTS settings for a specific book.
+  Future<void> saveBookTtsSettings(int bookId) async {
+    final currentServiceId = ttsService;
+    final settings = <String, dynamic>{
+      'ttsService': currentServiceId,
+      'ttsVoiceModel': getTtsVoiceModel(currentServiceId),
+      'ttsVolume': ttsVolume,
+      'ttsPitch': ttsPitch,
+      'ttsRate': ttsRate,
+      'onlineTtsConfig': getOnlineTtsConfig(currentServiceId),
+    };
+    await prefs.setString('bookTtsSettings_$bookId', jsonEncode(settings));
+  }
+
+  /// Load and apply previously saved TTS settings for a specific book.
+  /// Returns true if saved settings were found and applied.
+  bool loadBookTtsSettings(int bookId) {
+    final settings = getBookTtsSettings(bookId);
+    if (settings == null) return false;
+
+    if (settings.containsKey('ttsService')) {
+      ttsService = settings['ttsService'] as String;
+    }
+    final serviceId = ttsService;
+    if (settings.containsKey('ttsVoiceModel')) {
+      final voiceModel = settings['ttsVoiceModel'] as String;
+      if (voiceModel.isNotEmpty) {
+        setTtsVoiceModel(serviceId, voiceModel);
+      }
+    }
+    if (settings.containsKey('onlineTtsConfig')) {
+      final config =
+          Map<String, dynamic>.from(settings['onlineTtsConfig'] as Map);
+      saveOnlineTtsConfig(serviceId, config);
+    }
+    if (settings.containsKey('ttsVolume')) {
+      ttsVolume = (settings['ttsVolume'] as num).toDouble();
+    }
+    if (settings.containsKey('ttsPitch')) {
+      ttsPitch = (settings['ttsPitch'] as num).toDouble();
+    }
+    if (settings.containsKey('ttsRate')) {
+      ttsRate = (settings['ttsRate'] as num).toDouble();
+    }
+    return true;
+  }
+
+  /// Get raw saved TTS settings for a book, or null if none saved.
+  Map<String, dynamic>? getBookTtsSettings(int bookId) {
+    final json = prefs.getString('bookTtsSettings_$bookId');
+    if (json == null) return null;
+    try {
+      return jsonDecode(json) as Map<String, dynamic>;
+    } catch (e) {
+      return null;
+    }
+  }
+
   set pageTurnStyle(PageTurn style) {
     prefs.setString('pageTurnStyle', style.name);
     notifyListeners();

@@ -74,6 +74,8 @@ class _TtsWidgetState extends State<TtsWidget> {
                     setState(() {
                       TtsHandler().volume = newVolume;
                     });
+                    Prefs().saveBookTtsSettings(
+                        widget.epubPlayerKey.currentState!.book.id);
                   },
                   min: 0.0,
                   max: 1.0,
@@ -96,6 +98,8 @@ class _TtsWidgetState extends State<TtsWidget> {
                     setState(() {
                       TtsHandler().pitch = newPitch;
                     });
+                    Prefs().saveBookTtsSettings(
+                        widget.epubPlayerKey.currentState!.book.id);
                   },
                   min: 0.5,
                   max: 2.0,
@@ -118,6 +122,8 @@ class _TtsWidgetState extends State<TtsWidget> {
                     setState(() {
                       TtsHandler().rate = newRate;
                     });
+                    Prefs().saveBookTtsSettings(
+                        widget.epubPlayerKey.currentState!.book.id);
                   },
                   min: 0.0,
                   max: 2.0,
@@ -156,7 +162,9 @@ class _TtsWidgetState extends State<TtsWidget> {
                             );
                           },
                         ).then((_) {
-                          // Refresh state if needed when sheet closes
+                          // Save per-book TTS settings and refresh state
+                          Prefs().saveBookTtsSettings(
+                              widget.epubPlayerKey.currentState!.book.id);
                           setState(() {});
                         });
                       },
