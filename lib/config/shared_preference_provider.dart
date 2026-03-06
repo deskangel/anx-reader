@@ -166,7 +166,7 @@ class Prefs extends ChangeNotifier {
   }
 
   Color get themeColor {
-    int colorValue = prefs.getInt('themeColor') ?? Colors.blue.value;
+    int colorValue = prefs.getInt('themeColor') ?? Colors.blue.toARGB32();
     return Color(colorValue);
   }
 
