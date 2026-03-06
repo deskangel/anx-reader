@@ -419,10 +419,14 @@ class OnlineTts extends BaseTts {
     _shouldStop = false;
     updateTtsState(TtsStateEnum.playing);
 
-    // Sync to current location first
-    try {
-      await getHereFunction();
-    } catch (_) {}
+    // Only sync to current location if no content is provided.
+    // When content is provided (e.g. after section navigation),
+    // the JS TTS iterator is already correctly positioned.
+    if (content == null) {
+      try {
+        await getHereFunction();
+      } catch (_) {}
+    }
 
     // Start both loops
     unawaited(_startPrefetcher());
@@ -460,16 +464,41 @@ class OnlineTts extends BaseTts {
 
   @override
   Future<void> prev() async {
-    await stop();
+    _shouldStop = true;
+    _playbackCompleter?.complete();
+    await _player?.stop();
+    // Wait for old loops to fully exit before restarting
+    await _prefetcherCompleter?.future;
+    await _playerCompleter?.future;
+    // TODO: Optimization - for prev(), the buffer contains future sentences
+    // that are no longer valid after going back. For next(), the next sentence
+    // is likely already prefetched in the buffer and could be reused instead
+    // of resetting. Skipped for now due to JS iterator sync complexity.
+    _resetBuffer();
     await getPrevTextFunction();
-    await speak();
+    _shouldStop = false;
+    updateTtsState(TtsStateEnum.playing);
+    unawaited(_startPrefetcher());
+    await _startPlayer();
   }
 
   @override
   Future<void> next() async {
-    await stop();
+    _shouldStop = true;
+    _playbackCompleter?.complete();
+    await _player?.stop();
+    // Wait for old loops to fully exit before restarting
+    await _prefetcherCompleter?.future;
+    await _playerCompleter?.future;
+    // TODO: Optimization - the next sentence is likely already prefetched
+    // in the buffer and could be reused. Skipped for now due to JS iterator
+    // sync complexity.
+    _resetBuffer();
     await getNextTextFunction();
-    await speak();
+    _shouldStop = false;
+    updateTtsState(TtsStateEnum.playing);
+    unawaited(_startPrefetcher());
+    await _startPlayer();
   }
 
   @override

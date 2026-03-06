@@ -228,9 +228,9 @@ class SystemTts extends BaseTts {
       return;
     }
     restarting = true;
-    await stop();
+    await flutterTts.stop();
     _currentVoiceText = await getPrevTextFunction();
-    speak();
+    speak(content: _currentVoiceText);
     restarting = false;
   }
 
@@ -240,9 +240,9 @@ class SystemTts extends BaseTts {
       return;
     }
     restarting = true;
-    await stop();
+    await flutterTts.stop();
     _currentVoiceText = await getNextTextFunction();
-    speak();
+    speak(content: _currentVoiceText);
     restarting = false;
   }
 
