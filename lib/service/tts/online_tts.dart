@@ -465,6 +465,7 @@ class OnlineTts extends BaseTts {
   @override
   Future<void> prev() async {
     _shouldStop = true;
+    await getPrevTextFunction();
     _playbackCompleter?.complete();
     await _player?.stop();
     // Wait for old loops to fully exit before restarting
@@ -475,7 +476,6 @@ class OnlineTts extends BaseTts {
     // is likely already prefetched in the buffer and could be reused instead
     // of resetting. Skipped for now due to JS iterator sync complexity.
     _resetBuffer();
-    await getPrevTextFunction();
     _shouldStop = false;
     updateTtsState(TtsStateEnum.playing);
     unawaited(_startPrefetcher());
@@ -485,6 +485,7 @@ class OnlineTts extends BaseTts {
   @override
   Future<void> next() async {
     _shouldStop = true;
+    await getNextTextFunction();
     _playbackCompleter?.complete();
     await _player?.stop();
     // Wait for old loops to fully exit before restarting
@@ -494,7 +495,6 @@ class OnlineTts extends BaseTts {
     // in the buffer and could be reused. Skipped for now due to JS iterator
     // sync complexity.
     _resetBuffer();
-    await getNextTextFunction();
     _shouldStop = false;
     updateTtsState(TtsStateEnum.playing);
     unawaited(_startPrefetcher());
